@@ -1,0 +1,56 @@
+name: Configurable Delay Workflow
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:  # Позволяет запускать вручную
+    inputs:
+      delay_multiplier:
+        description: 'Delay multiplier'
+        required: false
+        default: '1'
+        type: string
+
+env:
+  DELAY_MULTIPLIER: ${{ github.event.inputs.delay_multiplier || 1 }}
+
+jobs:
+  configurable-delay:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Calculate delays
+      id: delays
+      run: |
+        MULTIPLIER=${{ env.DELAY_MULTIPLIER }}
+        echo "delay1=$(echo "5 * $MULTIPLIER" | bc)" >> $GITHUB_OUTPUT
+        echo "delay2=$(echo "10 * $MULTIPLIER" | bc)" >> $GITHUB_OUTPUT
+        echo "delay3=$(echo "15 * $MULTIPLIER" | bc)" >> $GITHUB_OUTPUT
+        echo "delay4=$(echo "8 * $MULTIPLIER" | bc)" >> $GITHUB_OUTPUT
+        
+    - name: Step 1 - Preparation
+      run: |
+        echo "⏳ Step 1: Preparing (delay ${{ steps.delays.outputs.delay1 }}s)"
+        sleep ${{ steps.delays.outputs.delay1 }}
+        echo "✅ Preparation complete"
+        
+    - name: Step 2 - Processing
+      run: |
+        echo "⏳ Step 2: Processing (delay ${{ steps.delays.outputs.delay2 }}s)"
+        sleep ${{ steps.delays.outputs.delay2 }}
+        echo "✅ Processing complete"
+        
+    - name: Step 3 - Validation
+      run: |
+        echo "⏳ Step 3: Validating (delay ${{ steps.delays.outputs.delay3 }}s)"
+        sleep ${{ steps.delays.outputs.delay3 }}
+        echo "✅ Validation complete"
+        
+    - name: Step 4 - Finalization
+      run: |
+        echo "⏳ Step 4: Finalizing (delay ${{ steps.delays.outputs.delay4 }}s)"
+        sleep ${{ steps.delays.outputs.delay4 }}
+        echo "🎉 Workflow completed successfully!"
